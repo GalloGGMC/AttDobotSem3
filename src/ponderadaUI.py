@@ -109,19 +109,19 @@ def move():
     sys.stdout = sys.__stdout__
     menu(f'A posição atual é x: {round(float(coord[0]),2)}, y: {round(float(coord[1]),2)} e z: {round(float(coord[2]),2)}')
 
-if __name__ == "__main__":
-    available_ports = list_ports.comports()
-    sys.stdout = open(os.devnull, "w")
-    try:
-        port = available_ports[0].device
-        device = pydobot.Dobot(port=port, verbose=True)
-    except:
-        port = available_ports[1].device
-        device = pydobot.Dobot(port=port, verbose=True)
-    sys.stdout = sys.__stdout__
+# if __name__ == "__main__":
+available_ports = list_ports.comports()
+sys.stdout = open(os.devnull, "w")
+try:
+    port = available_ports[0].device
+    device = pydobot.Dobot(port=port, verbose=True)
+except:
+    port = available_ports[1].device
+    device = pydobot.Dobot(port=port, verbose=True)
+sys.stdout = sys.__stdout__
 
-    msg = "Olá! esta é uma pequena interface gráfica para interagir com o robô\nInicialmente, qual o atuador sendo utilizado?"
-    opt = ["Garra", "Ventosa"]
-    head = easygui.choicebox(msg,"Interface de interação com o Magician Lite", choices = opt)
-    menu("")
+msg = "Olá! esta é uma pequena interface gráfica para interagir com o robô\nInicialmente, qual o atuador sendo utilizado?"
+opt = ["Garra", "Ventosa"]
+head = easygui.choicebox(msg,"Interface de interação com o Magician Lite", choices = opt)
+menu("")
 

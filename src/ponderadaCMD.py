@@ -102,17 +102,17 @@ def move():
     sys.stdout = sys.__stdout__
     menu()
 
-if __name__ == "__main__":
-    available_ports = list_ports.comports()
-    sys.stdout = open(os.devnull, "w")
-    try:
-        port = available_ports[0].device
-        device = pydobot.Dobot(port=port, verbose=True)
-    except:
-        port = available_ports[1].device
-        device = pydobot.Dobot(port=port, verbose=True)
-    sys.stdout = sys.__stdout__
-    print("\nOlá! esta é uma pequena interface gráfica para interagir com o robô")
-    head = str(input("\nInicialmente, qual o atuador sendo utilizado? (garra ou ventosa)\n- "))
-    menu()
+# if __name__ == "__main__":
+available_ports = list_ports.comports()
+sys.stdout = open(os.devnull, "w")
+try:
+    port = available_ports[0].device
+    device = pydobot.Dobot(port=port, verbose=True)
+except:
+    port = available_ports[1].device
+    device = pydobot.Dobot(port=port, verbose=True)
+sys.stdout = sys.__stdout__
+print("\nOlá! esta é uma pequena interface gráfica para interagir com o robô")
+head = str(input("\nInicialmente, qual o atuador sendo utilizado? (garra ou ventosa)\n- "))
+menu()
 
