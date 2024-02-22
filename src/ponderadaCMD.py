@@ -1,16 +1,21 @@
 import pydobot
 from serial.tools import list_ports
+from yaspin import yaspin
+import inquirer
 import os
 import sys
 
 device = None
+spinner = yaspin(text="Movendo", color="yellow")
 head = None
 
 # Mandar para a posição home
 def home():
-    sys.stdout = open(os.devnull, "w")
+    #sys.stdout = open(os.devnull, "w")
+    spinner.start()
     device.move_to(240.53,0,150.23,0,True)
-    sys.stdout = sys.__stdout__
+    spinner.stop()
+    #sys.stdout = sys.__stdout__
     print("Robô em sua posição inicial")
     menu()
 
@@ -19,26 +24,22 @@ def home():
 # Ligar a ferramenta (atuador)
 def ligarFerramenta():
     if head == "garra":
-        sys.stdout = open(os.devnull, "w")
         device.grip(True)
-        sys.stdout = sys.__stdout__
+        device.wait(200)
     else:
-        sys.stdout = open(os.devnull, "w")
         device.suck(True)
-        sys.stdout = sys.__stdout__
+        device.wait(200)
     print("Ferramenta ligada")
     menu()
 
 # Desligar a ferramenta (atuador)
 def desligarFerramenta():
     if head == "garra":
-        sys.stdout = open(os.devnull, "w")
         device.grip(False)
-        sys.stdout = sys.__stdout__
+        device.wait(200)
     else:
-        sys.stdout = open(os.devnull, "w")
         device.suck(False)
-        sys.stdout = sys.__stdout__
+        device.wait(200)
     print("Ferramenta desligada")
     menu()
 
@@ -48,47 +49,49 @@ def quit():
 
 def moveA(p : str):
     qtd = round(float(input("Quanto mexer?\n")),2)
-    sys.stdout = open(os.devnull, "w")
     (x,y,z,r,j1,j2,j3,j4) = device.pose()
     match p:
         case "x":
             device.move_to(round(x,2)+qtd,round(y,2),round(z,2),0,True)
+            print(f"Robô movido para: [{round(x,2)+qtd}, {round(y,2)}, {round(z,2)}]")
         case "y":
             device.move_to(round(x,2),round(y,2)+qtd,round(z,2),0,True)
+            print(f"Robô movido para: [{round(x,2)}, {round(y,2)+qtd}, {round(z,2)}]")
         case "z":
             device.move_to(round(x,2),round(y,2),round(z,2)+qtd,0,True)
+            print(f"Robô movido para: [{round(x,2)}, {round(y,2)}, {round(z,2)+qtd}]")
         case _:
-            sys.stdout = sys.__stdout__
             print("Eixo inválido")
-    sys.stdout = sys.__stdout__
     menu()
     
 def posicao():
-    sys.stdout = open(os.devnull, "w")
     (x,y,z,r,j1,j2,j3,j4) = device.pose()
-    sys.stdout = sys.__stdout__
     print(f'A posição atual é x: {round(x,2)}, y: {round(y,2)} e z: {round(z,2)}')
     menu()
 
 def menu():
-    inter = str(input("\nO que você quer fazer? (caso queira saber as funções presentes, digite 'ajuda') \n- "))
+    question = [inquirer.List("command","O que você quer fazer?",["Ajuda","Ligar","Desligar","Home","Mover","Mover em um eixo","Posição","Desligar"])]
+    answer = inquirer.prompt(question)
+    inter = answer['command']
+
     match inter:
-        case "ligar":
+        case "Ligar":
             ligarFerramenta()
-        case "desligar":
+        case "Desligar":
             desligarFerramenta()
-        case "home":
+        case "Home":
             home()
-        case "fechar":
+        case "Fechar":
             quit()
-        case "mover":
+        case "Mover":
             move()
-        case "posição":
+        case "Posição":
             posicao()
-        case "mover em um eixo":
-           moveA(input("Qual eixo? \n"))
-        case "ajuda":
-            print("\n- ligar (liga o atuador)\n- desligar (desliga o atuador)\n- home (coloca o Magician em sua posição inicial)\n- fechar (fecha o programa)\n- mover (move para as coordenadas x, y e z especificadas)\n- mover em um eixo (move a garra apenas em um eixo, acrescendo ou diminuindo um valor)\n- posição (imprime no console a posição do robô) \n- ajuda (lista todas as funções)")
+        case "Mover em um eixo":
+           q = inquirer.prompt([inquirer.List("eixo","Qual eixo?",["X","Y","Z"])])
+           moveA(q['eixo'])
+        case "Ajuda":
+            print("\n- Ligar (liga o atuador)\n- Desligar (desliga o atuador)\n- Home (coloca o Magician em sua posição inicial)\n- Fechar (fecha o programa)\n- Mover (move para as coordenadas x, y e z especificadas)\n- Mover em um eixo (move a garra apenas em um eixo, acrescendo ou diminuindo um valor)\n- Posição (imprime no console a posição do robô) \n- Ajuda (lista todas as funções)")
             menu()
         case _:
             quit()
@@ -97,21 +100,21 @@ def menu():
 
 def move():
     coord = [round(float(i),2) for i in input("Para onde será o movimento? (ex: 100.2, 3.24, -5.9): ").split(", ")]
-    sys.stdout = open(os.devnull, "w")
+    spinner.start()
     device.move_to(coord[0],coord[1],coord[2],0,True)
-    sys.stdout = sys.__stdout__
+    spinner.stop()
+    spinner.ok("✅ ")
+    print(f"Robô movido para: [{coord[0]}, {coord[1]}, {coord[2]}]")
     menu()
 
 # if __name__ == "__main__":
 available_ports = list_ports.comports()
-sys.stdout = open(os.devnull, "w")
 try:
     port = available_ports[0].device
-    device = pydobot.Dobot(port=port, verbose=True)
+    device = pydobot.Dobot(port=port, verbose=False)
 except:
     port = available_ports[1].device
-    device = pydobot.Dobot(port=port, verbose=True)
-sys.stdout = sys.__stdout__
+    device = pydobot.Dobot(port=port, verbose=False)
 print("\nOlá! esta é uma pequena interface gráfica para interagir com o robô")
 head = str(input("\nInicialmente, qual o atuador sendo utilizado? (garra ou ventosa)\n- "))
 menu()
